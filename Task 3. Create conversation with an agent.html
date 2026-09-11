@@ -1,0 +1,34 @@
+Let's exit out of the Share tab and create a new conversation:
+
+<img src="https://cdn.qwiklabs.com/vOsxSiK1oHIfvZj%2BVMqRuvZyQRyFIS8QKl07a8YLdAk%3D" />
+
+When you click Create conversation, a new untitled conversation is generated.
+
+Let's ask about what terms are trending in England (feel free to replace with a location of your choice!):
+
+Based on the top 10 terms in England, how did they trend for the past 3 months?
+Copied!
+Unpacking the response stream
+The data agent typically follows the same response stream when answering questions:
+
+Reasoning: The agent first "thinks" through the prompt. Expand the Show reasoning button to view step-by-step insights into the agent's decision-making process.
+Summary: The agent generates a high-level summary of the query, the resulting report, and the visualization.
+Generated SQL: Expand the Here's the query... section to inspect the SQL. Click Open in Editor to fine-tune the query manually in BigQuery Studio.
+Data Results: The agent presents the query results in a clear, tabular format.
+Visualization: A chart appears alongside a brief description. The agent automatically infers the best visualization type (e.g., a multi-series line chart) for your data.
+Data Insights: The agent summarizes key trends and takeaways found within the results.
+Follow-up Questions: Finally, the agent suggests relevant follow-up questions to help you continue your analysis.
+
+<img src="https://cdn.qwiklabs.com/01PJSrIzPnhWoNle9kKPvSnt0Q7bfJ3E1EmYXAvfZz4%3D" />
+
+BigQuery ML support
+Let's follow up and ask if the data agent can run some forecasting based on these results. This leverages BigQuery ML functions to predict future points.
+
+Note: For more details on which ML functions are supported, refer to the documentation
+Enter the following prompt (make sure to replace "monopoly board" with a term that's relevant for your query!):
+
+Can you predict and visualize how monopoly board will trend in the next 4 weeks?
+Copied!
+You can see AI_FORECAST was used to forecast a time series. No surprises, though it is interesting that you can see a major spike in August 2021, which coincides with the grand opening of the Monopoly Lifesized attraction in London!
+
+<img src="https://cdn.qwiklabs.com/tWGVHfUefAAKs4ltK6ldujAaxsFXu7MUVin05Z0fJyk%3D" />

@@ -1,0 +1,201 @@
+Task 1. Create an agent
+Let's create your first data agent using the Google Trends International Public dataset. This dataset is useful for asking questions about what search terms are trending internationally, and how those interests compare historically.
+
+Navigate to BigQuery > Agents. Click + Create Agent, let's start by giving your agent a name and brief description. This description is purely used for other users to understand the agent's purpose.
+
+Agent Name
+Enter the Agent Name
+
+Google Trends Agent
+Copied!
+Agent Description
+Enter the Agent Description:
+
+Data agent for the Google Trends International Top Terms public dataset
+Copied!
+Knowledge Sources
+Now add the knowledge sources. A knowledge source is a BigQuery table, view, or UDF that the agent can use to answer questions.
+
+For this lab, add only one table to keep things simple. However, keep in mind that you can add up to 50 knowledge sources per agent to handle more complex data scenarios.
+
+Click Add source and enter the following table in the search box, press Enter check the box, and click Add:
+
+bigquery-public-data.google_trends.international_top_terms
+Copied!
+Note: It may take some time to show the suggested table. If not found, select bigquery-public-data database and then google_trends dataset and then international_top_terms table manually.
+
+<img src="https://cdn.qwiklabs.com/Mp80ABk3au2ZeImO0rTZau9hr8NH9XA2LcxgxHmcrgc%3D" />
+
+To improve the data agent's accuracy, add structured context to the table and columns. Click Customise:
+
+<img src="https://cdn.qwiklabs.com/aPW9JiN3ZX7aIbQryZHDLuwvwSlqKMHd3uhItzF1wKA%3D" />
+
+Note: This allows adding descriptions at the table and column levels. Since the source is a public dataset that cannot be modified directly, these overrides help the agent understand the data without altering the original table.
+
+Gemini automatically generates suggestions for descriptions. Click Accept next to the Table description:
+
+<img src="https://cdn.qwiklabs.com/WNmlgsDQ8sf9fTUklRN4dbTjpMkwAttF%2BCt7KB1jdiA%3D" />
+
+To apply descriptions to all columns, check Select all rows and then click Accept suggestions:
+
+<img src="https://cdn.qwiklabs.com/1k4HQqZ9Kzr01oB25ppaCjnkzD0IVN1thJiMepyc9jU%3D" />
+
+Optional: Manually edit specific fields by clicking the edit icon next to a column name.
+
+Click Update at the bottom of the page to save changes and return to the Agent Editor.
+
+Region
+Please leave the Default Region unchanged and proceed.
+
+Instructions
+The agent instructions dialog is where you can give the agent additional guidance for it to interpret and query the data sources. This includes:
+
+Synonyms: Alternative terms for key fields.
+Key fields: The most important fields for analysis.
+Excluded fields: Fields that the data agent should avoid.
+Filtering and grouping: Fields that the agent should use to filter and group data.
+Join relationships: How two or more tables are combined based on common fields.
+To learn more about the nuances between agent instructions (free-form supplemental guidance) and structured context, refer to the authored context guide for the Conversational Analytics API.
+
+For best practices on agent instructions, refer to the Create data agent guide.
+
+Copy and paste the following instructions:
+
+
+### System Instruction
+
+* You are an expert data analyst for the Google Trends International public dataset.
+* Always filter on yesterday's refresh_date = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY).
+* If yesterday returns no data, filter on 2 days ago's refresh_date = DATE_SUB(CURRENT_DATE(), INTERVAL 2 DAY).
+* Default to country-level results (one row per term).
+* "Top" queries must deduplicate snapshot rows.
+* Only include week or score when the user explicitly asks for trends over time.
+* This is an international dataset and does not include any data for the United States.
+
+### Additional Descriptions
+
+#### 1. Core model:
+
+* refresh_date selects the daily Top-25 term set.
+* week + score are historical weekly values attached to those terms.
+* Filtering week does not change which terms appear.
+
+#### 2. Deduplication rule (critical):
+
+* Snapshot rows repeat across weeks and regions.
+* For "top" queries, always GROUP BY term (country-level) and compute rank as MIN(rank).
+
+#### 3. Defaults:
+
+* Country-level results only.
+* Use region_code only if the user explicitly asks for regions.
+* Limit results unless the user asks otherwise.
+
+#### 4. Time series usage:
+
+* Only include week or score when the user asks for trends over time, historical context, or week-over-week score changes.
+
+#### 5. Field guidance:
+
+* Prefer country_code or region_code for filters.
+* country_name / region_name are for display only.
+* score is normalized; compare trends within a term, not across terms.
+Copied!
+Verified Queries
+Verified queries, previously known as golden queries, are used as a reference for the agent to improve response accuracy. They shape an agent's response structure and help teach the agent the business logic that your organization uses.
+
+Let's add two examples for your agent. Click Add query, and copy / paste the following question and query:
+
+Question 1:
+
+What are the top search terms in the UK right now?
+Copied!
+Query 1:
+
+SELECT term, MIN(rank) AS rank
+FROM bigquery-public-data.google_trends.international_top_terms
+WHERE refresh_date = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
+  AND country_name = 'United Kingdom'
+GROUP BY term
+ORDER BY rank
+LIMIT 25;
+Copied!
+Before saving this query, let's run it to make sure that it's valid.
+
+<img src="https://cdn.qwiklabs.com/1Nh%2BUeeHenKBh3kZWvEzDCu14ECcXb96nHAreFXysqo%3D" />
+
+Looks good to me! Click Add to save the verified query.
+
+Let's add one more example for a more complex use case. Click Add query:
+
+Question 2:
+
+Show the last 12 weeks of interest for the current top 5 terms in Auckland.
+
+Query 2:
+
+WITH top5 AS (
+  SELECT term, MIN(rank) AS rank
+  FROM bigquery-public-data.google_trends.international_top_terms
+  WHERE refresh_date = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY) 
+  AND region_name = 'Auckland'
+  GROUP BY 1
+  ORDER BY 2
+  LIMIT 5
+),
+series AS (
+  SELECT term, week, score,
+    ROW_NUMBER() OVER (PARTITION BY term ORDER BY week DESC) AS rn
+  FROM bigquery-public-data.google_trends.international_top_terms
+  WHERE refresh_date = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY) 
+    AND region_name = 'Auckland'
+    AND term IN (SELECT term FROM top5)
+)
+SELECT week, term, score
+FROM series
+WHERE rn <= 12
+ORDER BY 1 DESC, 3
+Copied!
+Let's run and Add the verified query.
+
+Before moving on to the next section, let's look at the Gemini-generated suggestions:
+
+<img src="https://cdn.qwiklabs.com/s2MEAwspUJEtqF6hmd6i4fJWdHJBWQM3vxU7trUHLwQ%3D" />
+
+Here you can see some suggested verified queries. When creating a new agent in the future, this is a great starting point. Just make sure to validate any query that you add!
+
+Glossary
+Let's add a term to the glossary. If your business uses Dataplex, these terms are imported directly from the business glossary in the Dataplex Universal Catalog.
+
+Click Add term, and copy / paste the following example:
+
+Term:
+
+refresh_date
+Copied!
+Definition:
+
+Snapshot date that selects the daily Top 25 term set. All rows for that date belong to the same "what's trending now" snapshot. Attach Historical week and score values after this selection.
+Copied!
+Synonyms:
+
+today, latest, current, now, recent
+Copied!
+Please leave the Default Region unchanged and proceed.
+
+Then click Add, then Save.
+
+33b4a74fcde504d5.png
+
+Agent settings
+In the Agent settings section, you can configure Labels and the Maximum Bytes Billed.
+
+Labels
+Labels are key-value pairs used to organize Google Cloud resources into logical groups. To keep this lab focused, leave the labels blank.
+
+Maximum Bytes Billed
+To ensure you don't accidentally generate any expensive queries, let's set a limit for the maximum bytes billed per query. If the agent's query processes bytes above this limit, the query fails without incurring a charge. Input the following value:
+
+10000000000
+Copied!
+10,000,000,000 bytes is approximately 9.3 GB. If you don't specify a value, the maximum bytes billed defaults to the project's query usage per day quota.

@@ -1,0 +1,42 @@
+Preview
+
+We're all set! Let's test your agent before moving on. On the right side of the screen you can dynamically test the agent while making edits to the configuration. The preview automatically uses the new metadata you provide without saving or publishing the changes.
+
+Let's ask what data the agent has access to. Feel free to ask a few questions in your own words:
+
+<img src="https://cdn.qwiklabs.com/RhvZewzqow2TotkMLzF%2BVRPQoITH4QjZkKxZLJoZZ%2FY%3D" />
+
+Save
+After testing a few prompts, Save, and then Publish the agent:
+
+<img src="https://cdn.qwiklabs.com/8GqmnTlLGqLdFl7GLpuI1UNQu%2FzDn%2BnI33eOgzDJbyc%3D" />
+
+Publishing the agent will make it available in BigQuery Studio, the Conversational Analytics API, and Looker Studio Pro (subject to licensing):
+
+<img src="https://cdn.qwiklabs.com/pHsx%2BmgHadKeE2Z6frJYK3mxL%2Be9fY3H8px6fr9qiR0%3D" />
+
+Support for additional surfaces and integrations is planned for future releases.
+
+Share
+You should see a confirmation message that the agent has been published. You can now share this agent with other users.
+
+bdd4ee4be02c26d8.png
+
+When you share an agent with other users, you control their level of access by assigning them a specific role. These roles determine whether a collaborator can simply view your agent, or if they have the power to edit and manage its configuration.
+
+It's important to note that these roles can be applied at two different levels:
+
+Project Level: Granting a role at the project level provides the user with those permissions for all agents within that Google Cloud project.
+Agent Level: For more granular control, you can grant roles for a specific agent. This is useful when you want a user to have access to one particular data agent without seeing others in the project.
+For a detailed breakdown of how to manage access, refer to the Conversational Analytics API documentation on typical IAM scopes and the specific permissions included in each predefined role.
+
+The predefined roles for Conversational Analytics are as follows:
+
+Gemini Data Analytics Data Agent Owner (roles/geminidataanalytics.dataAgentOwner) - Create, Edit, Share, and Delete all data agents
+Gemini Data Analytics Data Agent Creator (roles/geminidataanalytics.dataAgentCreator) - Create, Edit, Share, and Delete your own data agents
+Gemini Data Analytics Data Agent Editor (roles/geminidataanalytics.dataAgentEditor) - Chat and Edit access to data agents
+Data Analytics Data Agent User (roles/geminidataanalytics.dataAgentUser) - Chat and View access to data agents
+Gemini Data Analytics Data Agent Viewer (roles/geminidataanalytics.dataAgentViewer) - View (read only) access to data agents
+
+Click Save then Close.
+
